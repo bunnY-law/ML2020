@@ -32,6 +32,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
+    gamma = gamma/tx.shape[0]
     for n_iter in range(max_iters):
         # TODO: compute gradient and loss
         loss = compute_mse(y,tx,w)
@@ -47,9 +48,11 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """Stochastic gradient descent algorithm."""
+    #http://blog.datumbox.com/tuning-the-learning-rate-in-gradient-descent/
     ws = [initial_w]
     losses = []
     w = initial_w
+    gamma = gamma/tx.shape[0]
 
     for n_iter in range(max_iters):
         # compute a stochastic gradient and loss
