@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-def mse(error):
-    return 1/2*np.mean(error**2)
+def mse(error,size_tx=2):
+    return 1/(2*size_tx)*np.mean(error**2)
 
 def mae(error):
     return np.mean(np.abs(error))
@@ -10,7 +10,7 @@ def mae(error):
 def compute_mse(y, tx, w):
     """Calculate the loss """
     error = y- tx.dot(w)
-    return mse(error)
+    return mse(error,tx.shape[0])
 
 def compute_gradient(y, tx, w):
     """Compute the gradient."""
@@ -34,15 +34,14 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     w = initial_w
     for n_iter in range(max_iters):
         # TODO: compute gradient and loss
-        grad,error = compute_gradient(y,tx,w)
-        loss = mse(error)
+        loss = compute_mse(y,tx,w)
+        grad,_ = compute_gradient(y,tx,w)
+        
         # TODO: update w by gradient
         w = w- gamma*grad
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        print("Gradient Descent({bi}/{ti}): loss={l}, w0={w0}, w1={w1}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
 
     return ws[-1],losses[-1]
 
@@ -74,7 +73,7 @@ def least_squares(y,tx):
 
 def ridge_regression(y, tx, lambda_):
     """implement ridge regression."""
-    aI = lamb * np.identity(tx.shape[1])
+    aI = lambda_ * np.identity(tx.shape[1])
     a = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
     w = np.linalg.solve(a, b)
