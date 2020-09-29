@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import numpy as np
+
 def compute_loss(y, tx, w):
     """Calculate the loss.
 
@@ -41,23 +43,22 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
     return ws[-1],losses[-1]
 
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma,batch_size= 1):
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """Stochastic gradient descent algorithm."""
     ws = [initial_w]
     losses = []
     w = initial_w
 
     for n_iter in range(max_iters):
-        for y_batch, tx_batch in batch_iter(y, tx, batch_size=batch_size, num_batches=1):
-            # compute a stochastic gradient and loss
-            grad, _ = compute_stoch_gradient(y_batch, tx_batch, w)
-            # update w through the stochastic gradient update
-            w = w - gamma * grad
-            # calculate loss
-            loss = compute_loss(y, tx, w)
-            # store w and loss
-            ws.append(w)
-            losses.append(loss)
+        # compute a stochastic gradient and loss
+        grad, _ = compute_stoch_gradient(y, tx, w)
+        # update w through the stochastic gradient update
+        w = w - gamma * grad
+        # calculate loss
+        loss = compute_loss(y, tx, w)
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
     return ws[-1],losses[-1]
 
 def least_squares(y,tx):
@@ -74,5 +75,23 @@ def least_squares(y,tx):
     w0 = num/den
     w1 = mean_y -(w0*mean_tx)
     w = [w0,w1]
+    loss = compute_loss(y,tx,w)
+    return w,loss
+
+def ridge_regression(y,tx,lambda_):
+    w = []
+    # normal of tx
+    A = tx.T @ tx
+    # Identity matrix with same shape as A
+    I = np.eye(A.shape[0])
+    # 
+    c = tx.T @ y
+    for lambVal in range(1, lambda_+1):
+        # Set up equations Bw = c        
+        lamb_I = lambVal * I
+        B = A + lamb_I
+        # Solve for w
+        w_i = np.linalg.solve(B,c)
+        w.append(w_i)
     loss = compute_loss(y,tx,w)
     return w,loss
