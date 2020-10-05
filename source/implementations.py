@@ -62,6 +62,7 @@ def pre_process(tx,method,degree):
         y = y[~mask]
         tx = build_poly(tx,degree)
         return tx,y
+    tx = standardize(tx)
     tx = build_poly(tx,degree)
     return tx
 
