@@ -16,6 +16,45 @@ def compute_mse(y, tx, w):
     error = y- tx.dot(w)
     return 0.5*(1/tx.shape[0])*np.mean(error*error)
 
+def sigmoid(t):
+    """
+    Applies the sigmoid function to a given input t.
+    """
+    return 1. / (1. + np.exp(-t))
+
+def compute_logistic_loss(y, tx, w):
+    """
+    Computes the loss as the negative log likelihood of picking the correct label.
+
+    """
+    tx_dot_w = tx @ w
+    return np.sum(np.log(1. + np.exp(tx_dot_w)) - y * tx_dot_w)
+
+def compute_logistic_gradient(y, tx, w):
+    """
+    Computes the gradient of the loss function used in logistic regression.
+    """
+    return tx.T@(sigmoid(tx@w) - y)
+
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """
+    Logistic regression using stochastic gradient descent 
+
+    """
+    threshold = 1e-8
+    ws = [initial_w]
+    losses = []
+    w = initial_w
+    for _ in range(max_iters):
+        loss = compute_logistic_loss(y, tx, w)
+        gradient = compute_logistic_gradient(y, tx, w)
+        w = w - gamma * gradient
+        ws.append(w)
+        losses.append(loss)
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            break # convergence criterion met
+    return ws[-1], losses[-1]
+
 def compute_gradient(y, tx, w):
     '''
     compute the gradient
@@ -113,11 +152,12 @@ def ridge_regression(y, tx, lambda_):
     a = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
     w = np.linalg.solve(a, b)
-    loss = compute_mse(y,tx,w)
+    loss = np.sqrt(compute_mse(y,tx,w))
     return w,loss
 
+
 def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = False):
-    max_iters = 10000
+    max_iters = 100
     best_lambda = -1
     best_degree = -1
     best_acc = 0 
@@ -152,7 +192,7 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
                 best_lambda = lambda_
                 best_degree = degree
                 best_acc = acc            
-        if regression == 'lsGD' or regression == 'lsSGD':            
+        if regression == 'lsGD' or regression == 'lsSGD' or regression=="logistic":            
             for gamma in gammas:
                 if regression == 'lsGD':
                     initial_w = np.ones(x_tr.shape[1])
@@ -162,6 +202,11 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
                 if regression == 'lsSGD':
                     initial_w = np.ones(x_tr.shape[1])
                     weight,_ = least_squares_SGD(y_tr, x_tr, initial_w, max_iters, gamma)
+                    if verbose:
+                        print('degree = {g}, gamma = {l}'.format(g=degree,l=gamma))
+                if regression =="logistic":
+                    initial_w = np.ones(x_tr.shape[1])
+                    weight,_= logistic_regression(y_tr, x_tr, initial_w, max_iters, gamma)
                     if verbose:
                         print('degree = {g}, gamma = {l}'.format(g=degree,l=gamma))
 
