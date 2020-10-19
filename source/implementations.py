@@ -68,7 +68,15 @@ def compute_stoch_gradient(y, tx, w):
     error = y - tx.dot(w)
     grad = -tx.T.dot(error) / len(error)
     return grad, error
-
+def remove_outliers(tx):
+    median=np.nanmedian(tx,axis = 0)
+    for i in range(tx.shape[1]):
+            mean = np.mean(tx[:, i])
+            std = np.std(tx[:, i])
+            #Replace values that are bigger than mean + 3std or smaller than mean - 3std
+            tx[:, i][tx[:, i] > mean + 3*std] = median[i]
+            tx[:, i][tx[:, i] < mean - 3*std] = median[i]
+    return tx
 
 def build_poly(X,degree) : 
 
@@ -83,6 +91,21 @@ def build_poly(X,degree) :
     X=standardize(X)
     return X_transform
 
+def cross_term(x, x_0):
+    for col1 in range(x_0.shape[1]):
+        for col2 in np.arange(col1 + 1, x_0.shape[1]):
+            if col1 != col2:
+                x = np.c_[x, x_0[:, col1] * x_0[:, col2]]
+    return x
+def log_term(x, x_0):
+
+    for col in range(x_0.shape[1]):
+        current_col = x_0[:, col]
+        current_col[current_col <= 0] = 1
+        x = np.c_[x, np.log(current_col)]
+    return x
+
+
 def pre_process(tx,method,degree):
     '''Pre-processing of the data by mean or median'''
     tx[tx==-999]=np.nan
@@ -90,7 +113,7 @@ def pre_process(tx,method,degree):
     if method == 'mean' or method == 'median':
         
         if method == 'mean':  
-            col = np.nanmean(tx,axis = 0) #change median by mean if you want mean
+            col = np.nanmean(tx,axis = 0) 
         if method == 'median':
             col = np.nanmedian(tx,axis = 0)
         indices = np.where(np.isnan(tx))
@@ -101,8 +124,13 @@ def pre_process(tx,method,degree):
         y = y[~mask]
         tx = build_poly(tx,degree)
         return tx,y
+    tx = remove_outliers(tx)
     tx = standardize(tx)
+    x_0 = tx
     tx = build_poly(tx,degree)
+    # tx = cross_term(tx,x_0) if you uncomment this line, the result is better but takes a lot of times
+    tx = log_term(tx, x_0)
+    #tx = standardize(tx)
     return tx
 
 def test(y_pred,y_test):
@@ -157,7 +185,7 @@ def ridge_regression(y, tx, lambda_):
 
 
 def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = False):
-    max_iters = 100
+    max_iters = 1000
     best_lambda = -1
     best_degree = -1
     best_acc = 0 
@@ -180,8 +208,6 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
                     break
                 if regression == 'ridge': 
                     weight,_ = ridge_regression(y_tr, x_tr, lambda_)
-                    if verbose:
-                        print('degree = {g}, lambda = {l}'.format(g=degree,l=lambda_))
                         
             y_pred = predict_labels(weight, x_te)
             acc = test(y_pred,y_te)
