@@ -14,7 +14,7 @@ def mae(error):
 def compute_mse(y, tx, w):
     """Calculate the loss """
     error = y- tx.dot(w)
-    return 0.5*(1/tx.shape[0])*np.mean(error*error)
+    return 0.5*(1.0/tx.shape[0])*np.mean(error*error)
 
 def sigmoid(t):
     """
@@ -61,7 +61,7 @@ def compute_gradient(y, tx, w):
     '''
     l = tx.shape[0]
     error = y - np.dot(tx, w)
-    return -(1/l)*np.dot(tx.T, error)
+    return -(1.0/l)*np.dot(tx.T, error)
 
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient from just few examples n and their corresponding y_n labels."""
@@ -78,18 +78,23 @@ def remove_outliers(tx):
             tx[:, i][tx[:, i] < mean - 3*std] = median[i]
     return tx
 
-def build_poly(X,degree) : 
 
-    # initialize X_transform 
-    X_transform = X 
-    j = 0
-    for j in range( degree + 1 ) : 
-        if j > 1 : 
-            x_pow = np.power(X, j) 
-            # append x_pow to X_transform 
-            X_transform = np.append( X_transform, x_pow, axis = 1 ) 
-    X=standardize(X)
-    return X_transform
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    # ***************************************************
+    # polynomial basis function: TODO
+    # this function should return the matrix formed
+    # by applying the polynomial basis to the input data
+    # ***************************************************
+    phi=np.zeros((len(x),np.shape(x)[1]*degree+1))
+    phi[:,0]=np.ones(len(x))[:]
+    k=1
+    for d in range(np.shape(x)[1]): 
+        for deg in range(1,degree+1):
+            phi[:,k]=np.power(x[:,d],deg)[:,0]
+            k=k+1
+    
+    return phi
 
 def cross_term(x, x_0):
     for col1 in range(x_0.shape[1]):
@@ -274,5 +279,8 @@ def split_data(x, y, ratio, seed=1):
     y_tr = y[index_tr]
     y_te = y[index_te]
     return x_tr, x_te, y_tr, y_te
+
+
+    
       
   
