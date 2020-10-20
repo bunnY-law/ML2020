@@ -96,6 +96,71 @@ def build_poly(x, degree):
     
     return phi
 
+
+def build_k_indices(y, k_fold, seed):
+    """build k indices for k-fold."""
+    num_row = y.shape[0]
+    interval = int(num_row / k_fold)
+    np.random.seed(seed)
+    indices = np.random.permutation(num_row)
+    k_indices = [indices[k * interval: (k + 1) * interval]
+                 for k in range(k_fold)]
+    return np.array(k_indices)
+
+
+
+def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
+
+        """build k indices for k-fold."""
+    k_indices=build_k_indices(y, k_fold, seed) 
+    
+    """return the loss of ridge regression."""
+    # ***************************************************
+    # form data with polynomial degree: TODO
+    # ***************************************************   
+    phi=build_poly(x,degree) 
+    
+    # ***************************************************
+    # get k'th subgroup in test, others in train: TODO
+    # ***************************************************
+    loss_tr=0
+    loss_te=0
+    for k in range(0,k_fold):
+
+        l=0
+        for i in range(0,len(k_indices)):
+            if i!=k:
+                if l==0:
+                    l=1
+                    x_tr=phi[k_indices[i][:]]
+                    y_tr=y[k_indices[i][:]]
+                else:
+                    x_tr=np.concatenate((x_tr,phi[k_indices[i][:]]),0)
+                    y_tr=np.concatenate((y_tr,y[k_indices[i][:]]),0)
+            else:
+                x_te=phi[k_indices[k][:]]
+                y_te=y[k_indices[k][:]]
+
+         # ***************************************************# ***************************************************
+          # ridge regression
+          # ***************************************************
+    
+        w,mse_tr=ridge_regression(y_tr,x_tr,lambda_)
+        e_te=y_te-x_te@w
+        mse_te=1.0/(2.0*len(y_te))*sum(e_te*e_te)
+        loss_tr+=np.sqrt(2.0*mse_tr)
+        loss_te+=np.sqrt(2.0*mse_te)    
+            
+    loss_tr /= k_fold
+    loss_te /= k_fold
+    return loss_tr,loss_te 
+
+    
+    
+
+
+
+
 def cross_term(x, x_0):
     for col1 in range(x_0.shape[1]):
         for col2 in np.arange(col1 + 1, x_0.shape[1]):
