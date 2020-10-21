@@ -62,7 +62,7 @@ def least_squares(y,tx):
     """calculate the least squares solution."""
     a = tx.T.dot(tx)
     b = tx.T.dot(y)
-    w= np.linalg.solve(a, b)
+    w= np.linalg.lstsq(a, b,rcond=None)[0]
     loss = compute_mse(y,tx,w)
     return w,loss
 
@@ -78,12 +78,12 @@ def ridge_regression(y, tx, lambda_):
 
 ##---LOGISTIC REGRESSION METHOD ---------------------------------------------
 
-def sigmoid(t):
-    return 1. / (1. + np.exp(-t))
+def sigmoid(x):
+    return 1. / (1. + np.exp(-x))
 
 def compute_logistic_loss(y, tx, w):
     tx_dot_w = tx @ w
-    return np.sum(np.log(1. + np.exp(tx_dot_w)) - y * tx_dot_w)
+    return np.sum(np.log(1. + np.exp(tx_dot_w)) - y @ tx_dot_w)
 
 def compute_logistic_gradient(y, tx, w):
     return tx.T@(sigmoid(tx@w) - y)
@@ -129,7 +129,7 @@ def build_poly(x, degree):
     k=1
     for d in range(np.shape(x)[1]): 
         for deg in range(1,degree+1):
-            phi[:,k]=np.power(x[:,d],deg)[:,0]
+            phi[:,k]=np.power(x[:,d],deg)
             k=k+1
     
     return phi
@@ -200,9 +200,9 @@ def pre_process(tx,method,degree):
     tx = standardize(tx)
     x_0 = tx
     tx = build_poly(tx,degree)
-    # tx = cross_term(tx,x_0) if you uncomment this line, the result is better but takes a lot of times
+    #tx = cross_term(tx,x_0) 
     tx = log_term(tx, x_0)
-    #tx = standardize(tx)
+    tx = standardize(tx)
     return tx
 
 
@@ -336,14 +336,14 @@ def build_k_indices(y, k_fold, seed):
 
 def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
 
-        """build k indices for k-fold."""
-    k_indices=build_k_indices(y, k_fold, seed) 
+    """build k indices for k-fold."""
+    k_indices=build_k_indices(y, k_fold, seed)
     
     """return the loss of ridge regression."""
     # ***************************************************
     # form data with polynomial degree: TODO
     # ***************************************************   
-    phi=build_poly(x,degree) 
+    phi=pre_process(x,'mean',degree) 
     
     # ***************************************************
     # get k'th subgroup in test, others in train: TODO
