@@ -67,14 +67,13 @@ def least_squares(y,tx):
     return w,loss
 
 def ridge_regression(y, tx, lambda_):
-    aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
-    a = tx.T.dot(tx) + aI
-    b = tx.T.dot(y)
-    w = np.linalg.solve(a, b)
-    loss = np.sqrt(compute_mse(y,tx,w))
+
+    E=np.diag(np.concatenate((np.array([[0]]),np.ones((1,np.shape(tx)[1]-1))),1)[0,:])
+    
+    w=np.linalg.solve(tx.T@tx+lambda_*E,tx.T@y)
+    loss=compute_mse(y,tx,w)
+    
     return w,loss
-
-
 
 
 ##---LOGISTIC REGRESSION METHOD ---------------------------------------------
@@ -372,10 +371,9 @@ def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
           # ***************************************************
     
         w,mse_tr=ridge_regression(y_tr,x_tr,lambda_)
-        e_te=y_te-x_te@w
-        mse_te=1.0/(2.0*len(y_te))*sum(e_te*e_te)
-        loss_tr+=np.sqrt(2.0*mse_tr)
-        loss_te+=np.sqrt(2.0*mse_te)    
+        mse_te=compute_mse(y_te,x_te,w)
+        loss_tr+=mse_tr
+        loss_te+=mse_te
             
     loss_tr /= k_fold
     loss_te /= k_fold
