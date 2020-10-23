@@ -62,7 +62,7 @@ def least_squares(y,tx):
     """calculate the least squares solution."""
     a = tx.T.dot(tx)
     b = tx.T.dot(y)
-    w= np.linalg.lstsq(a, b,rcond=None)[0]
+    w= np.linalg.solve(a, b)
     loss = compute_mse(y,tx,w)
     return w,loss
 
@@ -237,7 +237,11 @@ def pre_process(tx,method,degree):
     #tx = cross_term(tx,x_0) !Dont need anymore just set last arg of build_poly to true!
     #!!!watch out to apply log_term after build_poly and using x_0 unprocessed data (out 1 columns)
     tx = build_poly(tx,degree,'true')
+<<<<<<< HEAD
     tx = log_term(tx,x_0)
+=======
+   # tx = log_term(tx,x_0)
+>>>>>>> 4e52042
     return tx
 
 
