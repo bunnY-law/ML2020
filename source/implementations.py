@@ -6,16 +6,19 @@ from proj1_helpers import *
 import matplotlib.pyplot as plt
 
 
-def cross_validation_visualization(lambds, mse_tr, mse_te):
+def cross_validation_visualization(lambds, mse_tr, mse_te, std_tr, std_te):
     """visualization the curves of mse_tr and mse_te."""
+    
     plt.semilogx(lambds, mse_tr, marker=".", color='b', label='train error')
     plt.semilogx(lambds, mse_te, marker=".", color='r', label='test error')
+    plt.errorbar(lambds,mse_tr,std_tr,linestyle='None', color='b', marker='o')
+    plt.errorbar(lambds,mse_te,std_te, linestyle='None', color='r',marker='o')
     plt.xlabel("lambda")
-    plt.ylabel("rmse")
+    plt.ylabel("loss & std ")
     plt.title("cross validation")
     plt.legend(loc=2)
     plt.grid(True)
-    plt.savefig("cross_validation")
+    
 
 ##---------------------------------------------------------------------------
 ##--------GENERAL----------------------------------------
