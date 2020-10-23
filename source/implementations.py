@@ -3,6 +3,19 @@ import numpy as np
 import math
 from proj1_helpers import *
 
+import matplotlib.pyplot as plt
+
+
+def cross_validation_visualization(lambds, mse_tr, mse_te):
+    """visualization the curves of mse_tr and mse_te."""
+    plt.semilogx(lambds, mse_tr, marker=".", color='b', label='train error')
+    plt.semilogx(lambds, mse_te, marker=".", color='r', label='test error')
+    plt.xlabel("lambda")
+    plt.ylabel("rmse")
+    plt.title("cross validation")
+    plt.legend(loc=2)
+    plt.grid(True)
+    plt.savefig("cross_validation")
 
 ##---------------------------------------------------------------------------
 ##--------GENERAL----------------------------------------
@@ -140,7 +153,7 @@ def reg_logistic_regression(y, tx, initial_w,lambda_, max_iters, gamma):
 
 
 
-def build_poly(x, degree, cross_term='true'):
+def build_poly(x, degree, cross_term='false'):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
     # ***************************************************
     # polynomial basis function: TODO
@@ -213,7 +226,7 @@ def standardize(data):
 
 
 
-def pre_process(tx,method,degree):
+def pre_process(tx,method,degree,cross='false',log='false'):
     '''Pre-processing of the data by mean or median'''
     tx[tx==-999]=np.nan
     tx = np.delete(tx, [4,6,12,24,25,27,28], axis=1)
@@ -236,12 +249,11 @@ def pre_process(tx,method,degree):
     x_0 = tx
     #tx = cross_term(tx,x_0) !Dont need anymore just set last arg of build_poly to true!
     #!!!watch out to apply log_term after build_poly and using x_0 unprocessed data (out 1 columns)
-    tx = build_poly(tx,degree,'true')
-<<<<<<< HEAD
-    tx = log_term(tx,x_0)
-=======
-   # tx = log_term(tx,x_0)
->>>>>>> 4e52042
+    tx = build_poly(tx,degree,cross)
+    if log=='true':
+        tx = log_term(tx,x_0)
+
+
     return tx
 
 
@@ -382,7 +394,7 @@ def build_k_indices(y, k_fold, seed):
 
 
 
-def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
+def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge",cross='false',log='false'):
 
     """build k indices for k-fold."""
     k_indices=build_k_indices(y, k_fold, seed)
@@ -391,7 +403,7 @@ def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
     # ***************************************************
     # form data with polynomial degree: TODO
     # ***************************************************   
-    phi=pre_process(x,'mean',degree) 
+    phi=pre_process(x,'mean',degree,cross,log) 
     
     # ***************************************************
     # get k'th subgroup in test, others in train: TODO
