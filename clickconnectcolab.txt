@@ -1,3 +1,12 @@
+in you browser go to development tools (ctrl+maj+l ) > console 
+and glue what's under and enter
+
+this enter: startClickConnect()
+to start and  stopClickConnect() to stop
+otherwise colab stops after 90 minutes max of inactivity
+
+
+
 var startClickConnect = function startClickConnect(){
     var clickConnect = function clickConnect(){
         console.log("Connnect Clicked - Start");
