@@ -1,0 +1,12 @@
+for polynomial + log+ cross:
+         min_degree = 9min_loss = 0.2664021719512695min_std = 0.0015101212875640643lambda_min = 0
+ 
+for polynomial+ cross:
+         min_degree = 9min_loss = 0.2663732664084758min_std = 0.0016391796801397246lambda_min = 0
+ 
+for polynomial + log:
+         min_degree = 9min_loss = 0.2835421406198721min_std = 0.0016682115742263641lambda_min = 0
+ 
+for polynomial:
+         min_degree = 9min_loss = 0.28371290026917645min_std = 0.0016021698818747528lambda_min = 0
+ 
