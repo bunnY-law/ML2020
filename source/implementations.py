@@ -140,21 +140,31 @@ def reg_logistic_regression(y, tx, initial_w,lambda_, max_iters, gamma):
 
 
 
-def build_poly(x, degree):
+def build_poly(x, degree, cross_term='true'):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
     # ***************************************************
     # polynomial basis function: TODO
     # this function should return the matrix formed
     # by applying the polynomial basis to the input data
     # ***************************************************
-    phi=np.zeros((len(x),np.shape(x)[1]*degree+1))
+    n=np.shape(x)[1]
+    if cross_term=='true':
+        phi=np.zeros((len(x),n*degree+1+np.int(n*(n-1)/2.)))
+    else:
+        phi=np.zeros((len(x),n*degree+1))
+
     phi[:,0]=np.ones(len(x))[:]
     k=1
-    for d in range(np.shape(x)[1]): 
+    for d in range(n): 
         for deg in range(1,degree+1):
             phi[:,k]=np.power(x[:,d],deg)
             k=k+1
-    
+    if cross_term=='true':
+        for i in range(0,n):
+            for j in range(i+1,n):
+                phi[:,k]=x[:,i]*x[:,j]
+                k=k+1
+               
     return phi
 
 def cross_term(x, x_0):
@@ -167,10 +177,12 @@ def cross_term(x, x_0):
 
 def log_term(x, x_0):
 
-    for col in range(x_0.shape[1]):
+    for col in range(0,x_0.shape[1]):
         current_col = x_0[:, col]
-        current_col[current_col <= 0] = 1
-        x = np.c_[x, np.log(current_col)]
+        current_col[current_col <= 0] = -np.log(1.-current_col[current_col<=0])
+        current_col[current_col > 0] = np.log(1.+current_col[current_col>0])
+        x = np.c_[x, current_col]
+        
     return x
 
 
@@ -222,10 +234,10 @@ def pre_process(tx,method,degree):
     tx = remove_outliers(tx)
     tx = standardize(tx)
     x_0 = tx
-    tx = build_poly(tx,degree)
-    #tx = cross_term(tx,x_0) 
-    tx = log_term(tx, x_0)
-    tx = standardize(tx)
+    #tx = cross_term(tx,x_0) !Dont need anymore just set last arg of build_poly to true!
+    #!!!watch out to apply log_term after build_poly and using x_0 unprocessed data (out 1 columns)
+    tx = build_poly(tx,degree,'true')
+    tx = log_term(tx,x_0)
     return tx
 
 
@@ -380,8 +392,8 @@ def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
     # ***************************************************
     # get k'th subgroup in test, others in train: TODO
     # ***************************************************
-    loss_tr=0
-    loss_te=0
+    Losses_tr=[]
+    Losses_te=[]
     for k in range(0,k_fold):
 
         l=0
@@ -404,12 +416,15 @@ def cross_validation(y, x, k_fold, lambda_, degree, seed=1, method="ridge"):
     
         w,mse_tr=ridge_regression(y_tr,x_tr,lambda_)
         mse_te=compute_mse(y_te,x_te,w)
-        loss_tr+=mse_tr
-        loss_te+=mse_te
+        Losses_tr += [mse_tr]
+        Losses_te += [mse_te]
             
-    loss_tr /= k_fold
-    loss_te /= k_fold
-    return loss_tr,loss_te 
+    loss_tr = np.mean(Losses_tr)
+    loss_te = np.mean(Losses_te)
+    var_tr = np.std(Losses_tr)
+    var_te = np.std(Losses_te)
+
+    return loss_tr,loss_te, var_tr,var_te
 
     
 
