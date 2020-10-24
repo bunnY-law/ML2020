@@ -104,7 +104,7 @@ def compute_logistic_loss(y, tx, w):
 def compute_logistic_gradient(y, tx, w):
     return tx.T@(sigmoid(tx@w) - y)/y.shape[0]
 
-def reg_logistic_gradient(y, tx, lambda_, w):
+def reg_logistic_gradient(y, tx, w, lambda_):
     """return the loss and gradient."""
     loss = compute_logistic_loss(y, tx, w) + lambda_ * np.squeeze(w.T@w)
     gradient = compute_logistic_gradient(y, tx, w) + 2 * lambda_ * w
@@ -218,8 +218,8 @@ def remove_outliers(tx):
             mean = np.mean(tx[:, i])
             std = np.std(tx[:, i])
             #Replace values that are bigger than mean + 3std or smaller than mean - 3std
-            tx[:, i][tx[:, i] > mean + 3*std] = median[i]
-            tx[:, i][tx[:, i] < mean - 3*std] = median[i]
+            tx[:, i][tx[:, i] > mean + 10*std] = median[i]
+            tx[:, i][tx[:, i] < mean - 10*std] = median[i]
     return tx
 
 def standardize(data):
@@ -248,11 +248,13 @@ def pre_process(tx,method,degree,cross='false',log='false'):
         tx = build_poly(tx,degree)
         return tx,y
     tx = remove_outliers(tx)
+    
     tx = standardize(tx)
     x_0 = tx
     #tx = cross_term(tx,x_0) !Dont need anymore just set last arg of build_poly to true!
     #!!!watch out to apply log_term after build_poly and using x_0 unprocessed data (out 1 columns)
     tx = build_poly(tx,degree,cross)
+    
     if log=='true':
         tx = log_term(tx,x_0)
 
