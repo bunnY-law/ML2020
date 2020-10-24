@@ -14,7 +14,7 @@ def cross_validation_visualization(lambds, mse_tr, mse_te, std_tr, std_te):
     plt.errorbar(lambds,mse_tr,std_tr,linestyle='None', color='b', marker='o')
     plt.errorbar(lambds,mse_te,std_te, linestyle='None', color='r',marker='o')
     plt.xlabel("lambda")
-    plt.ylabel("loss & std ")
+    plt.ylabel("loss")
     plt.title("cross validation")
     plt.legend(loc=2)
     plt.grid(True)
@@ -44,7 +44,7 @@ def compute_mse(y, tx, w):
 
 def compute_gradient(y, tx, w):
     e = y - np.dot(tx, w)
-    return -(1./len(y))*tx.T@e
+    return -np.sqrt((1./len(y))*tx.T@e)
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
    
@@ -86,7 +86,7 @@ def ridge_regression(y, tx, lambda_):
 
     #E=np.diag(np.concatenate((np.array([[0]]),np.ones((1,np.shape(tx)[1]-1))),1)[0,:])
     E=np.diag(np.ones(np.shape(tx)[1]))
-    w=np.linalg.solve(tx.T@tx+lambda_*tx.shape[1]*E,tx.T@y)
+    w=np.linalg.solve(tx.T@tx+lambda_*E,tx.T@y)
     loss=compute_mse(y,tx,w)
     
     return w,loss
