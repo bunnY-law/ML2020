@@ -30,7 +30,7 @@ def mae(error):
 def compute_mse(y, tx, w):
     """Calculate the loss """
     e = y- tx@w
-    return 1./(2*len(y))*e.dot(e)
+    return 1./(2.*len(y))*e.dot(e)
 
 
 
@@ -84,9 +84,9 @@ def least_squares(y,tx):
 
 def ridge_regression(y, tx, lambda_):
 
-    E=np.diag(np.concatenate((np.array([[0]]),np.ones((1,np.shape(tx)[1]-1))),1)[0,:])
-    
-    w=np.linalg.solve(tx.T@tx+lambda_*E,tx.T@y)
+    #E=np.diag(np.concatenate((np.array([[0]]),np.ones((1,np.shape(tx)[1]-1))),1)[0,:])
+    E=np.diag(np.ones(np.shape(tx)[1]))
+    w=np.linalg.solve(tx.T@tx+lambda_*tx.shape[1]*E,tx.T@y)
     loss=compute_mse(y,tx,w)
     
     return w,loss
@@ -165,12 +165,12 @@ def build_poly(x, degree, cross_term='false'):
     # ***************************************************
     n=np.shape(x)[1]
     if cross_term=='true':
-        phi=np.zeros((len(x),n*degree+1+np.int(n*(n-1)/2.)))
+        phi=np.zeros((len(x),n*degree+np.int(n*(n-1)/2.)))
     else:
-        phi=np.zeros((len(x),n*degree+1))
+        phi=np.zeros((len(x),n*degree))
 
-    phi[:,0]=np.ones(len(x))[:]
-    k=1
+    #phi[:,0]=np.ones(len(x))[:]
+    k=0
     for d in range(n): 
         for deg in range(1,degree+1):
             phi[:,k]=np.power(x[:,d],deg)
@@ -183,12 +183,6 @@ def build_poly(x, degree, cross_term='false'):
                
     return phi
 
-def cross_term(x, x_0):
-    for col1 in range(x_0.shape[1]):
-        for col2 in np.arange(col1 + 1, x_0.shape[1]):
-            if col1 != col2:
-                x = np.c_[x, x_0[:, col1] * x_0[:, col2]]
-    return x
 
 
 def log_term(x, x_0):
@@ -218,8 +212,8 @@ def remove_outliers(tx):
             mean = np.mean(tx[:, i])
             std = np.std(tx[:, i])
             #Replace values that are bigger than mean + 3std or smaller than mean - 3std
-            tx[:, i][tx[:, i] > mean + 10*std] = median[i]
-            tx[:, i][tx[:, i] < mean - 10*std] = median[i]
+            tx[:, i][tx[:, i] > mean + 3*std] = median[i]
+            tx[:, i][tx[:, i] < mean - 3*std] = median[i]
     return tx
 
 def standardize(data):
@@ -249,7 +243,7 @@ def pre_process(tx,method,degree,cross='false',log='false'):
         return tx,y
     tx = remove_outliers(tx)
     
-    tx = standardize(tx)
+    
     x_0 = tx
     #tx = cross_term(tx,x_0) !Dont need anymore just set last arg of build_poly to true!
     #!!!watch out to apply log_term after build_poly and using x_0 unprocessed data (out 1 columns)
@@ -258,7 +252,7 @@ def pre_process(tx,method,degree,cross='false',log='false'):
     if log=='true':
         tx = log_term(tx,x_0)
 
-
+    tx = standardize(tx)
     return tx
 
 
