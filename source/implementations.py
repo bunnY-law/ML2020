@@ -12,10 +12,11 @@ import matplotlib.pyplot as plt
 
 
 def mae(error):
+    """Calculate the Mean Absolute Error"""
     return np.mean(np.abs(error))
 
 def compute_mse(y, tx, w):
-    """Calculate the loss """
+    """Calculate the Mean squared Error"""
     e = y- tx@w
     return 1./(2.*len(y))*e.dot(e)
 
@@ -37,11 +38,26 @@ def err_percent(y_test, tx_test, w_trained):
 ##--------------GRADIENT METHODS------------------------------
 
 def compute_gradient(y, tx, w):
+    """Compute the Gradient for the Gradient Descent and the Stochastic Gradient Descent
+        Input : y = labels
+                tx = features
+                w = weights
+        Output : Gradient 
+    """
     e = y - np.dot(tx, w)
     return -np.sqrt((1./len(y))*tx.T@e)
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+    """ Perform the least squares regression using the Gradient Descent
+    Input : y = labels
+            tx = features
+            initial_w = initial weights
+            max_iters = maximum number of iteration
+            Gamma = learning rate
+        Output : w = final weight
+                 loss = loss of the final iteration
+    """
    
     # Define parameters to store w and loss
     w = initial_w
@@ -53,6 +69,14 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+    """ Perform the least squares regression using the Stochastic Gradient Descent
+    Input : y = labels
+            tx = features
+            initial_w = initial weights
+            max_iters = maximum number of iteration
+            Gamma = learning rate
+    Output : w = final weight
+             loss = loss of the final iteration"""
     w = initial_w
 
     for n_iter in range(max_iters):
@@ -71,7 +95,11 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
 ##-----METHODS  USING NORMAL EQUATION---------------------------------------
 def least_squares(y,tx):
-    """calculate the least squares solution."""
+    """calculate the least squares solution.
+    Input : y = labels
+            tx = features
+    Output : w = final weight
+             loss = loss of the final iteration"""
     a = tx.T.dot(tx)
     b = tx.T.dot(y)
     w= np.linalg.lstsq(a, b)[0]
@@ -81,6 +109,12 @@ def least_squares(y,tx):
 
 
 def ridge_regression(y, tx, lambda_):
+    """ Perform the ridge regression "
+    Input : y = labels
+            tx = features
+            Lambda = learning rate
+        Output : w = final weight
+                 loss = loss of the final iteration"""
 
     #E=np.diag(np.concatenate((np.array([[0]]),np.ones((1,np.shape(tx)[1]-1))),1)[0,:])
     E=np.diag(np.ones(np.shape(tx)[1]))
@@ -97,23 +131,45 @@ def ridge_regression(y, tx, lambda_):
 ##---LOGISTIC REGRESSION METHOD ---------------------------------------------
 
 def sigmoid(x):
+    """Compute the value of the sigmoid of:
+    input: x = value to use for the sigmoid
+    """
+    
     return 1. / (1. + np.exp(-x))
 
 
 
 def compute_logistic_loss(y, tx, w):
+    """Compute the logistic loss using:
+    Input: y= labels
+           x = features
+           w = weight
+    Output: The logistic loss"""
+    
     tx_dot_w = tx @ w
     return np.sum(np.log(1. + np.exp(tx_dot_w)) - y @ tx_dot_w)
 
 
 
 def compute_logistic_gradient(y, tx, w):
+    """Compute the logistic gradient using:
+    Input: y= labels
+           x = features
+           w = weight
+    Output: The logistic gradient"""
+    
     return tx.T@(sigmoid(tx@w) - y)/y.shape[0]
 
 
 
 def reg_logistic_gradient(y, tx, w, lambda_):
-    """return the loss and gradient."""
+    """Compute the regularized logistic gradient using:
+    Input: y= labels
+           x = features
+           w = weight
+           lambda_ = weighting of the penalty
+    Output: The logistic gradient"""
+    
     loss = compute_logistic_loss(y, tx, w) + lambda_ * np.squeeze(w.T@w)
     gradient = compute_logistic_gradient(y, tx, w) + 2 * lambda_ * w
     return loss, gradient
@@ -121,10 +177,16 @@ def reg_logistic_gradient(y, tx, w, lambda_):
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """Compute the logistic gradient regression using GD 
+    Input: y= labels
+           x = features
+           initial_w = initial weight
+           max_iters= maximum number of iteration
+           gamma = learning rate
+    Output: ws[-1] = final weight 
+            losses[-1] =  final loss
     """
-    Logistic regression using stochastic gradient descent 
-
-    """
+    
     threshold = 1e-8
     ws = [initial_w]
     losses = []
@@ -138,15 +200,18 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
             break # convergence 
     return ws[-1], losses[-1]
+def reg_logistic_regression(y, tx,lambda_, initial_w, max_iters, gamma):
+    
+    """Compute the regularized logistic gradient regression using GD 
+    Input: y= labels
+           x = features
+           lambda_ = weighted factor
+           initial_w = initial weight
+           max_iters= maximum number of iteration
+           gamma = learning rate
+    Output: ws[-1] = final weight 
+            losses[-1] =  final loss"""
 
-
-
-
-def reg_logistic_regression(y, tx, initial_w,lambda_, max_iters, gamma):
-    """
-    Logistic regression using stochastic gradient descent 
-
-    """
     threshold = 1e-8
     ws = [initial_w]
     losses = []
@@ -204,6 +269,10 @@ def build_poly(x, degree, cross_term='false'):
 
 
 def log_term(x, x_0):
+    """ Compute the log of each feature in x_0 and add them to the database:
+    Input: x = actual database augmented
+           x_0 = base database
+    Output: x = Database augmented with the log of the features"""
 
     for col in range(0,x_0.shape[1]):
         current_col = x_0[:, col]
@@ -225,30 +294,46 @@ def log_term(x, x_0):
 
 
 def remove_outliers(tx):
+    """ Remove the outliers of the database tx
+    Input : tx = Database
+    Output : tx = Database without the outliers
+    """
     median=np.nanmedian(tx,axis = 0)
     for i in range(tx.shape[1]):
             mean = np.mean(tx[:, i])
             std = np.std(tx[:, i])
-            #Replace values that are bigger than mean + 3std or smaller than mean - 3std
             tx[:, i][tx[:, i] > mean + 3*std] = median[i]
             tx[:, i][tx[:, i] < mean - 3*std] = median[i]
     return tx
 
 
 def standardize(data):
+    """ Standardize the data:
+    Input: data = database
+    Output: data = database standardized
+    """
+    
     data -= np.mean(data)
     data /= np.std(data)
     return data    
 
 
 
-def pre_process(tx, method, degree, cross='false', log='false'):
-    '''Pre-processing of the data by mean or median'''
+
+def pre_process(tx,method,degree,cross='false',log='false'):
+    '''Pre-processing of the data by mean or median
+    Input : tx = database
+            method= mean or median 
+            degree= degree of the polynom that we create with build_poly()
+            cross= True if want to apply cross term
+            log = True if want to apply log_term()
+    Output : tx= Database augmented
+    '''
 
     tx[tx==-999]=np.nan
     tx = np.delete(tx, [4,6,12,24,25,27,28], axis=1)
 
-        
+       
     if method == 'mean':  
         col = np.nanmean(tx,axis = 0) 
 
@@ -262,10 +347,9 @@ def pre_process(tx, method, degree, cross='false', log='false'):
     if log == 'true':
         x_0 = tx #save current state of tx so we 
                 #can apply log terms only to initial data
-    
+ 
     #!!!watch out to apply log_term after build_poly and using x_0 unprocessed data (out 1 columns)
     tx = build_poly(tx,degree,cross)
-    
     if log=='true':
         tx = log_term(tx,x_0)
 
@@ -306,6 +390,19 @@ def split_data(x, y, ratio, seed=1):
 
 
 def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = False):
+    """ Perform grid search for the parameters choosen
+    Input : lambdas= weighted parameter
+            ratio= % of data taken for the training
+            degrees= augmented the database by [deg1,deg2,deg3, ...]
+            gammas= learning rate
+            method= mean or median
+            tx = Features
+            y = labels
+            regression= type of regression to perfome
+            verbose=True if you want steps accuracy
+            
+    output: best_model = [best lambda or gamma, best degree, best accuracy]
+    """
     max_iters = 1000
     best_lambda = -1
     best_degree = -1
