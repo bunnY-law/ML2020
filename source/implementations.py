@@ -2,7 +2,6 @@
 import numpy as np
 import math
 from proj1_helpers import *
-
 import matplotlib.pyplot as plt
 
 
@@ -86,7 +85,11 @@ def ridge_regression(y, tx, lambda_):
 
     #E=np.diag(np.concatenate((np.array([[0]]),np.ones((1,np.shape(tx)[1]-1))),1)[0,:])
     E=np.diag(np.ones(np.shape(tx)[1]))
-    w=np.linalg.solve(tx.T@tx+lambda_*E,tx.T@y)
+    if lambda_<1e-5:
+        w=np.linalg.lstsq(tx.T@tx+lambda_*E,tx.T@y)[0]
+    else:
+        w=np.linalg.solve(tx.T@tx + lambda_*E,tx.T@y)
+
     loss=compute_mse(y,tx,w)
     
     return w,loss
