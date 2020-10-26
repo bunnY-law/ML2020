@@ -22,7 +22,7 @@ it helps us experiment basic features engineering and cross-validation to find t
 ## How to run:
 The modules required are : `numpy`, `matplotlib.pyplot`.
 The best method parameters are saved in : `best_methods.txt`
-To see the evolution's plots of the accuracy for the best method, please look at the file : `c_v_deg=2logcross`
+To see the evolution's plots of the accuracy for the best method, please look at the file : [`source/best_features_for_ridge_regression.png`](https://github.com/bunnY-law/ML2020/blob/master/source/best_features_for_ridge_regression.png)
 
 1. If you want to reproduce the best result obtained and submitted on [AIcrowd](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs/leaderboards):
 ```
