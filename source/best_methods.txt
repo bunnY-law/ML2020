@@ -12,3 +12,7 @@ for polynomial + log:
 for polynomial:
          min_degree = 2min_loss = 21.718799999999998  min_std = 0.16172866165278246  lambda_min = 0
  
+
+ 
+
+ 

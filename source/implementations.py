@@ -566,6 +566,7 @@ def cross_validation_visualization(lambds, mse_tr, mse_te, std_tr, std_te):
     plt.legend(loc=2)
     plt.grid(True)
 
+
 def cross_val_run(y, tx, Features, Degrees, Lambdas, k_fold =5, seed =1):
 
     fig=plt.figure(3) #final plot % errors made vs. polynomial Degree for different combinations
@@ -635,7 +636,7 @@ def cross_val_run(y, tx, Features, Degrees, Lambdas, k_fold =5, seed =1):
                     
                 plt.title(title)
                 plt.savefig('c_v_deg='+str(degree)+t2)
-                plt.show()
+                plt.close(1)
                     
 
 
@@ -647,10 +648,10 @@ def cross_val_run(y, tx, Features, Degrees, Lambdas, k_fold =5, seed =1):
             labl='poly'   
             if log == 'true':
               
-                labl += 'log_+'
+                labl += ' + log'
                 
             if cross == 'true':
-                labl += '_cross'
+                labl += ' + cross'
             plt.errorbar(Degrees, Min_loss_Degrees,Min_var, marker='o', label=labl)
                 
             #keep the global minimum loss over all degrees and ridge parameter
@@ -682,7 +683,7 @@ def cross_val_run(y, tx, Features, Degrees, Lambdas, k_fold =5, seed =1):
     #final plot of best losses over degrees for every feature expansion combination      
     plt.title('best features, ridge regression')
     plt.xlabel("polynomial degree")
-    plt.ylabel("loss")
+    plt.ylabel("error %")
     plt.legend(loc='best') 
     fig.savefig('best_features_for_ridge_regression')
         
