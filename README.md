@@ -26,6 +26,6 @@ To see the evolution's plots of the accuracy for the best method, please look at
 
 1. If you want to reproduce the best result obtained and submitted on [AIcrowd](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs/leaderboards):
 ```
-python run.py
+python source/run.py
 ```
 
