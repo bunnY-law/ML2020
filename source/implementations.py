@@ -44,8 +44,8 @@ def compute_gradient(y, tx, w):
                 w = weights
         Output : Gradient 
     """
-    e = y - np.dot(tx, w)
-    return -np.sqrt((1./len(y))*tx.T@e)
+    e = y - tx @ w
+    return -(1./len(y) * (tx.T@e))
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
@@ -102,7 +102,7 @@ def least_squares(y,tx):
              loss = loss of the final iteration"""
     a = tx.T.dot(tx)
     b = tx.T.dot(y)
-    w= np.linalg.lstsq(a, b)[0]
+    w= np.linalg.lstsq(a, b,rcond=None)[0]
     loss = compute_mse(y,tx,w)
     return w,loss
 
@@ -145,9 +145,8 @@ def compute_logistic_loss(y, tx, w):
            x = features
            w = weight
     Output: The logistic loss"""
-    
-    tx_dot_w = tx @ w
-    return np.sum(np.log(1. + np.exp(tx_dot_w)) - y @ tx_dot_w)
+
+    return  np.sum(np.log(1. + np.exp(tx@w))-y@(tx@w))
 
 
 
@@ -158,7 +157,7 @@ def compute_logistic_gradient(y, tx, w):
            w = weight
     Output: The logistic gradient"""
     
-    return tx.T@(sigmoid(tx@w) - y)/y.shape[0]
+    return tx.T@(sigmoid(tx@w) - y)
 
 
 
@@ -170,9 +169,9 @@ def reg_logistic_gradient(y, tx, w, lambda_):
            lambda_ = weighting of the penalty
     Output: The logistic gradient"""
     
-    loss = compute_logistic_loss(y, tx, w) + lambda_ * np.squeeze(w.T@w)
+    loss = compute_logistic_loss(y, tx, w) + lambda_/2 * np.squeeze(w.T@w)
     gradient = compute_logistic_gradient(y, tx, w) + 2 * lambda_ * w
-    return loss, gradient
+    return loss,gradient
 
 
 
@@ -217,7 +216,7 @@ def reg_logistic_regression(y, tx,lambda_, initial_w, max_iters, gamma):
     losses = []
     w = initial_w
     for _ in range(max_iters):
-        loss,gradient = reg_logistic_gradient(y, tx, lambda_, w)
+        loss,gradient = reg_logistic_gradient(y, tx, w,lambda_)
         w = w - gamma * gradient
         ws.append(w)
         losses.append(loss)
@@ -408,15 +407,17 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
     best_degree = -1
     best_acc = 0 
     
+    
     for degree in degrees:
-        tx_int = pre_process(tx,method,degree)
+        acc = 0 
+        tx_int = pre_process(tx,method,degree,'true','true')
         x_tr, x_te, y_tr, y_te=split_data(tx_int, y, ratio)
         if regression == 'ls' or regression == 'ridge':    
             for ind, lambda_ in enumerate(lambdas):
                 if regression == 'ls':
                     weight,_  = least_squares(y_tr,x_tr)
                     y_pred = predict_labels(weight, x_te)
-                    acc = test(y_pred,y_te)
+                    acc =(100- err_percent(y_te, x_te, weight))/100
                     if verbose:
                         print('degree = {g},acc = {acc}'.format(g=degree,acc =acc))
                     if acc > best_acc:
@@ -425,10 +426,9 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
                         best_acc = acc
                     break
                 if regression == 'ridge': 
-                    weight,_ = ridge_regression(y_tr, x_tr, lambda_)
-                        
-            y_pred = predict_labels(weight, x_te)
-            acc = test(y_pred,y_te)
+                    weight,_ = ridge_regression(y_tr, x_tr, lambda_)    
+                    y_pred = predict_labels(weight, x_te)
+                    acc =(100- err_percent(y_te, x_te, weight))/100
             if verbose:
                 print('acc = {acc}'.format(acc =acc))
                 print('####################################')
@@ -436,8 +436,9 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
                 best_lambda = lambda_
                 best_degree = degree
                 best_acc = acc            
-        if regression == 'lsGD' or regression == 'lsSGD' or regression=="logistic":            
+        if regression == 'lsGD' or regression == 'lsSGD' or regression=="logistic" or regression =="reg_logistic":            
             for gamma in gammas:
+                
                 
                 if regression == 'lsGD':
                     initial_w = np.ones(x_tr.shape[1])
@@ -459,12 +460,12 @@ def grid_search(lambdas,ratio,degrees,gammas,method,tx,y,regression,verbose = Fa
                         
                 if regression =="reg_logistic":
                     initial_w = np.ones(x_tr.shape[1])
-                    weight,_= reg_logistic_regression(y, tx, initial_w,0.00001, max_iters, gamma)
+                    weight,_= reg_logistic_regression(y_tr, x_tr, 0.00001/len(y_tr), initial_w, max_iters, gamma)
                     if verbose:
                         print('degree = {g}, gamma = {l}'.format(g=degree,l=gamma))
 
                 y_pred = predict_labels(weight, x_te)
-                acc = test(y_pred,y_te)
+                acc =(100- err_percent(y_te, x_te, weight))/100
                 if verbose:
                     print('acc = {acc}'.format(acc =acc))
                     print('####################################')
@@ -565,7 +566,8 @@ def cross_validation_visualization(lambds, mse_tr, mse_te, std_tr, std_te):
     plt.legend(loc=2)
     plt.grid(True)
 
-def cross_val_run(y, tx, Features, Degrees, Lambdas, k_fold =5, seed =1)
+def cross_val_run(y, tx, Features, Degrees, Lambdas, k_fold =5, seed =1):
+
     fig=plt.figure(3) #final plot % errors made vs. polynomial Degree for different combinations
 
     #iterate over different feature expansions combinations, polynomial degrees, and 
