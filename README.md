@@ -7,12 +7,12 @@
 
 ## Introduction 
 
-The goal of this project is to implement different regression method using numpy. In addition, as it is the first Machine Learning project,
+The goal of this project is to implement different regression methods using numpy. In addition, as it is the first Machine Learning project,
 it helps us experiment basic features engineering and cross-validation to find the best hyperparameters for each method.
 
 ## Stucture of the folder
 
-* `source/implementation.py`: Which contains all the regression Method : Least Squares regression (Standard, GD, SGD), Ridge Regression and Logistic Regression (Normal and Regularized) in addition, it also contains all the cost and gradient for each method as well as the cross-validation function and the grid search.
+* `source/implementation.py`: Which contains all the regression methods : Least Squares regression (Standard, GD, SGD), Ridge Regression and Logistic Regression (Normal and Regularized) in addition, it also contains all the cost and gradient for each method as well as the cross-validation function and the grid search.
 * `source/proj1.ipynb`: Notebook with the exploratory of the dataset and all the computations.
 * `source/proj1_helpers.py`: Contains the functions provided for the project
 * `data/test.csv`: Contains the test set
